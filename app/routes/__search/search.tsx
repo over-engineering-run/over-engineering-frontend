@@ -209,6 +209,12 @@ interface Data {
 const Page = () => {
   const data = useLoaderData<Data>();
   const [results, setResults] = useState(data.results);
+  const [from, setFrom] = useState(0);
+
+  useEffect(() => {
+    setResults(data.results);
+    setFrom(0);
+  }, [data, setResults, setFrom]);
 
   const fetcher = useFetcher();
   useEffect(() => {
@@ -217,7 +223,6 @@ const Page = () => {
     setResults((prevItems) => [...prevItems, ...fetcher.data.results]);
   }, [fetcher.data]);
 
-  const [from, setFrom] = useState(0);
   useEffect(() => {
     if (fetcher.state === "loading") return;
 
