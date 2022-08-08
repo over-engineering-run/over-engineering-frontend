@@ -10,7 +10,8 @@
     "dev:css": "npm run generate:css -- --watch",
     "dev:remix": "cross-env NODE_ENV=development remix dev",
     "generate:css": "tailwindcss -i ./app/styles/app.css -o ./app/styles/tailwind.css",
-    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint ."
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "start": "remix-serve build"
   },
   "prettier": {},
   "eslintIgnore": [
