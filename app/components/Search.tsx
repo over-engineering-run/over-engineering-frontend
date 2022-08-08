@@ -1,8 +1,8 @@
-import { Form, useSearchParams } from "@remix-run/react";
+import { Form, useSearchParams, useTransition } from "@remix-run/react";
 import clsx from "clsx";
 import { useCombobox } from "downshift";
 import { useEffect, useId, useRef, useState } from "react";
-import { CommonProps } from "~/types";
+import type { CommonProps } from "~/types";
 import Icon from "./Icon";
 
 function useIsFocus<T extends HTMLElement>() {
@@ -44,6 +44,7 @@ const Search = (props: Props) => {
   });
 
   const isOpen = Boolean(_props.isOpen || isFocus);
+  const transition = useTransition();
 
   return (
     <Form
@@ -80,16 +81,21 @@ const Search = (props: Props) => {
           className="my-0.5 flex-1 bg-transparent"
         />
 
-        <button
-          type="submit"
-          className={clsx(
-            "border-l border-secondary pl-2",
-            "mx-4 w-max whitespace-nowrap text-primary-2",
-            !_props.inputValue && "hidden"
-          )}
-        >
-          Press <kbd>↵</kbd> to search
-        </button>
+        {transition.state === "idle" && (
+          <button
+            type="submit"
+            className={clsx(
+              "border-l border-secondary pl-2",
+              "mx-4 w-max whitespace-nowrap text-primary-2",
+              "hidden",
+              _props.inputValue && "md:block"
+            )}
+          >
+            Press <kbd>↵</kbd> to search
+          </button>
+        )}
+
+        {transition.state === "submitting" && <Icon.Loading />}
       </div>
 
       <div
