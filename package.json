@@ -10,7 +10,8 @@
     "dev:css": "npm run generate:css -- --watch",
     "dev:remix": "cross-env NODE_ENV=development remix dev",
     "generate:css": "tailwindcss -i ./app/styles/app.css -o ./app/styles/tailwind.css",
-    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint ."
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "start": "remix-serve build"
   },
   "prettier": {},
   "eslintIgnore": [
@@ -32,6 +33,7 @@
     "clsx": "^1.2.1",
     "date-fns": "^2.29.1",
     "downshift": "^6.1.7",
+    "lottie-react": "^2.3.1",
     "node-html-parser": "^5.3.3",
     "ramda": "^0.28.0",
     "react": "^18.2.0",

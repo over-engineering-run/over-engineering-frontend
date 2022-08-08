@@ -263,10 +263,7 @@ const Page = () => {
         loadingSize={134}
         loading={
           <div className="grid w-full place-content-center lg:ml-44 lg:max-w-screen-md">
-            <Icon.Loading
-              className="h-12 w-12 text-purple-400"
-              stroke="currentColor"
-            />
+            <Icon.Loading />
           </div>
         }
       >

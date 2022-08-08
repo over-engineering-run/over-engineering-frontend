@@ -19,7 +19,11 @@ const Chevron = {
   Right: HiOutlineChevronRight,
 };
 
-import { TailSpin as Loading } from "react-loading-icons";
+import Lottie from "lottie-react";
+
+const Loading = () => (
+  <Lottie animationData={require("~/assets/loading.json")} />
+);
 
 export default {
   Menu,
