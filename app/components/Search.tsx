@@ -54,6 +54,7 @@ const Search = (props: Props) => {
         "brightness-95 hocus-within:brightness-100",
         props.className
       )}
+      onSubmit={() => ref.current?.blur()}
     >
       <div
         className={clsx(
