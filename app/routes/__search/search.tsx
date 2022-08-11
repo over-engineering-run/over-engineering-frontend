@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { json, LoaderFunction } from "@remix-run/server-runtime";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { promiseHash, redirectBack } from "remix-utils";
-import VirtualList from "~/components/VirtualList";
 import clsx from "clsx";
 import Icon from "~/components/Icon";
 import type { CommonProps } from "~/types";
@@ -10,6 +9,9 @@ import db from "~/db.server";
 import { evolve, join, map, pipe, prop, slice, split, trim } from "ramda";
 import parse from "node-html-parser";
 import * as datefns from "date-fns";
+import { FixedSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
+import InfiniteLoader from "react-window-infinite-loader";
 
 interface SearchResult {
   series: {
@@ -132,7 +134,12 @@ export const Result = (props: Props) => {
       <div className="relative space-y-2 text-sm md:text-base">
         <div className="flex items-center gap-2">
           {/* Series */}
-          <a href={props.series.href} target="_blank" rel="noopener noreferrer">
+          <a
+            href={props.series.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block truncate"
+          >
             {props.series.name}
           </a>
 
@@ -144,6 +151,7 @@ export const Result = (props: Props) => {
                 href={props.series.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="min-w-max"
               >
                 {props.users.name}
               </a>
@@ -153,11 +161,7 @@ export const Result = (props: Props) => {
 
         {/* Title */}
         <h2
-          className={clsx(
-            "pb-1 font-bold",
-            "text-xl md:text-2xl"
-            //
-          )}
+          className={clsx("pb-1 font-bold", "text-xl md:text-2xl", "truncate")}
         >
           <a href={props.href} target="_blank" rel="noopener noreferrer">
             {props.title}
@@ -208,77 +212,100 @@ interface Data {
 }
 const Page = () => {
   const data = useLoaderData<Data>();
-  const [results, setResults] = useState(data.results);
-  const [from, setFrom] = useState(0);
+  const [items, setItems] = useState(data.results);
 
   useEffect(() => {
-    setResults(data.results);
-    setFrom(0);
-  }, [data, setResults, setFrom]);
+    setItems(data.results);
+  }, [data, setItems]);
 
   const fetcher = useFetcher();
   useEffect(() => {
     if (!fetcher.data) return;
 
-    setResults((prevItems) => [...prevItems, ...fetcher.data.results]);
+    setItems((prevItems) => [...prevItems, ...fetcher.data.results]);
   }, [fetcher.data]);
 
-  useEffect(() => {
-    if (fetcher.state === "loading") return;
+  const margin = 20;
 
-    if (from > results.length) {
-      const params = new URLSearchParams();
-      params.set("skip", String(from));
-      params.set("take", String(COUNT_PER_PAGE));
-      params.set("q", String(data.query));
-      fetcher.load(`/search?${params.toString()}`);
-    }
-  }, [fetcher.state, fetcher.load, from, results.length, data.query]);
+  function loadNextPage() {
+    const params = new URLSearchParams();
+    params.set("skip", String(items.length));
+    params.set("take", String(COUNT_PER_PAGE));
+    params.set("q", String(data.query));
+    fetcher.load(`/search?${params.toString()}`);
+  }
 
-  const [listHeight, setListHeight] = useState(0);
+  const hasNextPage = items.length < data.count;
+
+  const isNextPageLoading = fetcher.state === "loading";
+
+  // If there are more items to be loaded then add an extra row to hold a loading indicator.
+  const itemCount = hasNextPage ? items.length + 1 : items.length;
+
+  // Only load 1 page of items at a time.
+  // Pass an empty callback to InfiniteLoader in case it asks us to load more than once.
+  const loadMoreItems = isNextPageLoading ? () => {} : loadNextPage;
+
+  // Every row is loaded except for our loading indicator row.
+  const isItemLoaded = (index: number) => !hasNextPage || index < items.length;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-1 flex-col">
       {/* Number of results found */}
-      <p
-        className="my-4 px-4 lg:ml-44 lg:px-0"
-        ref={(ref) => {
-          if (!ref) return;
-
-          const height =
-            window.innerHeight - ref.getBoundingClientRect().bottom;
-          setListHeight(height);
-        }}
-      >
-        About {data.count} results
-      </p>
+      <p className="my-4 px-4 lg:ml-44 lg:px-0">About {data.count} results</p>
 
       {/* List of Search Results */}
-      <VirtualList
-        size={300}
-        style={{
-          height: `${listHeight}px`,
-        }}
-        count={results.length}
-        onReachEnd={() => {
-          if (fetcher.state === "loading") return;
-          setFrom(results.length + COUNT_PER_PAGE);
-        }}
-        hasNext={results.length >= data.count}
-        loadingSize={134}
-        loading={
-          <div className="grid w-full place-content-center lg:ml-44 lg:max-w-screen-md">
-            <Icon.Loading />
-          </div>
-        }
-      >
-        {(index) => (
-          <Result
-            className="px-4 lg:ml-44 lg:max-w-screen-md lg:px-0"
-            {...results[index]}
-          />
-        )}
-      </VirtualList>
+      <div className="flex-1">
+        <AutoSizer>
+          {(size) => (
+            <InfiniteLoader
+              isItemLoaded={isItemLoaded}
+              itemCount={itemCount}
+              loadMoreItems={loadMoreItems}
+            >
+              {({ onItemsRendered, ref }) => (
+                <List
+                  {...size}
+                  itemCount={itemCount}
+                  itemSize={236 + 2 * margin}
+                  onItemsRendered={onItemsRendered}
+                  ref={ref}
+                >
+                  {({ index, style }) =>
+                    !isItemLoaded(index) ? (
+                      <div
+                        className={clsx(
+                          "px-4 lg:ml-44 lg:max-w-screen-md lg:px-0",
+                          "flex items-center justify-center"
+                        )}
+                        style={{
+                          ...style,
+                          marginTop: margin,
+                          marginBottom: margin,
+                        }}
+                      >
+                        <div className="w-32">
+                          <Icon.Loading />
+                        </div>
+                      </div>
+                    ) : (
+                      <Result
+                        className="px-4 lg:ml-44 lg:max-w-screen-md lg:px-0"
+                        style={{
+                          ...style,
+                          marginTop: margin,
+                          marginBottom: margin,
+                        }}
+                        {...items[index]}
+                      />
+                    )
+                  }
+                </List>
+              )}
+            </InfiniteLoader>
+          )}
+        </AutoSizer>
+      </div>
     </div>
   );
 };

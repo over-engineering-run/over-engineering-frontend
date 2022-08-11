@@ -1,8 +1,6 @@
 import clsx from "clsx";
 import { Outlet } from "@remix-run/react";
-import { Menu, MenuButton } from "@reach/menu-button";
 import { Link } from "@remix-run/react";
-import Icon from "~/components/Icon";
 import Logo from "~/components/Logo";
 import Search from "~/components/Search";
 import type { CommonProps } from "~/types";
@@ -11,22 +9,18 @@ type HeaderProps = CommonProps;
 const Header = (props: HeaderProps) => (
   <header className={clsx("border-b", props.className)}>
     <div className="relative flex items-center lg:ml-44">
+      {/* Mobile */}
       <div className="w-full space-y-4 p-4 lg:hidden">
         <div className="flex justify-between">
           <Link to="/">
             <Logo />
           </Link>
-
-          <Menu>
-            <MenuButton aria-label="open navigation">
-              <Icon.Menu className="h-6 w-6" />
-            </MenuButton>
-          </Menu>
         </div>
 
         <Search />
       </div>
 
+      {/* Desktop */}
       <div
         className={clsx(
           "px-0 py-6",
@@ -49,7 +43,7 @@ const Header = (props: HeaderProps) => (
 );
 
 const Layout = () => (
-  <main>
+  <main className="flex h-screen flex-col">
     <Header />
 
     <Outlet />
