@@ -43,7 +43,7 @@ const Header = (props: HeaderProps) => (
 );
 
 const Layout = () => (
-  <main>
+  <main className="flex h-screen flex-col">
     <Header />
 
     <Outlet />
