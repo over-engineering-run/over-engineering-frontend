@@ -20,9 +20,10 @@ const Chevron = {
 };
 
 import Lottie from "lottie-react";
+import { CommonProps } from "~/types";
 
-const Loading = () => (
-  <Lottie animationData={require("~/assets/loading.json")} />
+const Loading = (props: CommonProps) => (
+  <Lottie animationData={require("~/assets/loading.json")} {...props} />
 );
 
 export default {

@@ -61,9 +61,11 @@ const Search = (props: Props) => {
         className={clsx(
           "flex items-center p-3",
           "bg-form",
+          "shadow",
           isOpen ? "rounded-t-3xl" : "rounded-3xl",
           isOpen && "shadow-lg shadow-black",
-          "hocus:shadow-lg hocus:shadow-black"
+          "hocus:shadow-lg hocus:shadow-black",
+          "transition-shadow duration-150 ease-out-sine"
         )}
         {..._props.getComboboxProps()}
       >
@@ -79,24 +81,28 @@ const Search = (props: Props) => {
           {..._props.getInputProps({ ref })}
           name="q"
           type="search"
-          className="my-0.5 flex-1 bg-transparent"
+          className="my-1.5 flex-1 bg-transparent"
         />
 
         {transition.state === "idle" && (
           <button
             type="submit"
             className={clsx(
-              "border-l border-secondary pl-2",
-              "mx-4 w-max whitespace-nowrap text-primary-2",
-              "hidden",
-              _props.inputValue && "md:block"
+              "border-l border-secondary",
+              "w-max whitespace-nowrap p-1 px-4",
+              "flex items-center",
+              "font-semibold text-primary-2",
+              _props.inputValue ? "block" : "hidden"
             )}
           >
-            Press <kbd>↵</kbd> to search
+            <span className="hidden lg:block">
+              PRESS <kbd>↵</kbd> TO SEARCH
+            </span>
+            <span className="lg:hidden">SEARCH</span>
           </button>
         )}
 
-        {transition.state === "submitting" && <Icon.Loading />}
+        {transition.state === "submitting" && <Icon.Loading className="w-8" />}
       </div>
 
       <div
