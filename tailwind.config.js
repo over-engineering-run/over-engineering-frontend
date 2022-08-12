@@ -35,6 +35,7 @@ module.exports = {
     require("@tailwindcss/forms"),
     require("@tailwindcss/line-clamp"),
     require("tailwindcss-aria-plugin"),
+    require("@whiterussianstudio/tailwind-easing"),
     //
   ],
 };
