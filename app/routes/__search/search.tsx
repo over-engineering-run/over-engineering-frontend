@@ -48,7 +48,7 @@ const search = async ({ query, skip, take }: SearchProps) => {
         series ( name, href )
     `
     )
-    .textSearch("title", query)
+    .textSearch("title", `'${query}'`)
     .range(skip, skip + take);
 
   if (error) throw error;
@@ -59,7 +59,7 @@ const count = async ({ query }: Pick<SearchProps, "query">) => {
   const { error, count } = await db
     .from("articles")
     .select("href", { count: "exact", head: true })
-    .textSearch("title", query);
+    .textSearch("title", `'${query}'`);
 
   if (error) throw error;
   return count;
