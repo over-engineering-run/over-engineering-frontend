@@ -50,7 +50,7 @@ const Index = () => (
             Here, Let me search that for you
           </p>
 
-          <Search />
+          <Search autoFocus />
         </div>
       </div>
     </Section>
