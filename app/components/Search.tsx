@@ -32,7 +32,9 @@ const items = [
   { value: "grape" },
   { value: "banana" },
 ];
-type Props = CommonProps;
+type Props = CommonProps & {
+  autoFocus?: boolean;
+};
 const Search = (props: Props) => {
   const id = useId();
   const [searchParams] = useSearchParams();
@@ -82,6 +84,7 @@ const Search = (props: Props) => {
           name="q"
           type="search"
           className="my-1.5 flex-1 bg-transparent"
+          ref={(ref) => props.autoFocus && ref?.focus()}
         />
 
         {transition.state === "idle" && (
