@@ -106,7 +106,7 @@ const Search = (props: Props) => {
             )}
           >
             <span className="hidden lg:block">
-              PRESS <kbd>↵</kbd> TO SEARCH
+              SUBMIT OR PRESS <kbd>↵</kbd>
             </span>
             <span className="lg:hidden">SEARCH</span>
           </button>
