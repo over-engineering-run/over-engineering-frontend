@@ -1,4 +1,9 @@
-import { Form, useSearchParams, useTransition } from "@remix-run/react";
+import {
+  Form,
+  useFetcher,
+  useSearchParams,
+  useTransition,
+} from "@remix-run/react";
 import clsx from "clsx";
 import { useCombobox } from "downshift";
 import { useEffect, useId, useRef, useState } from "react";
@@ -25,13 +30,45 @@ function useIsFocus<T extends HTMLElement>() {
   return [ref, isFocus] as const;
 }
 
-const items = [
-  { value: "apple" },
-  { value: "pear" },
-  { value: "orange" },
-  { value: "grape" },
-  { value: "banana" },
-];
+interface AutoCompleteResult {
+  query: string;
+  result: { name: string; type: string }[];
+}
+
+function useAutoComplete() {
+  const fetcher = useFetcher<AutoCompleteResult>();
+
+  const [resetNextTick, setResetNextTick] = useState(false);
+
+  const [options, setOptions] = useState<AutoCompleteResult["result"]>([]);
+
+  useEffect(() => {
+    if (!fetcher.data) return;
+
+    if (resetNextTick) {
+      setResetNextTick(false);
+      return setOptions([]);
+    }
+
+    setOptions(fetcher.data.result);
+  }, [fetcher.data, setOptions]);
+
+  function search(q: string) {
+    const params = new URLSearchParams({
+      q,
+      max: String(5),
+    });
+
+    fetcher.load(`/api/auto-complete?${params}`);
+  }
+
+  function reset() {
+    setResetNextTick(true);
+  }
+
+  return { options, search, reset };
+}
+
 type Props = CommonProps & {
   autoFocus?: boolean;
 };
@@ -39,17 +76,28 @@ const Search = (props: Props) => {
   const id = useId();
   const [searchParams] = useSearchParams();
   const [ref, isFocus] = useIsFocus<HTMLInputElement>();
+
+  const { options, search, reset } = useAutoComplete();
+
   const _props = useCombobox({
     id,
-    items,
+    items: options || [],
     initialInputValue: searchParams.get("q") || "",
+    itemToString: (item) => item?.name || "",
+    onStateChange: (state) => {
+      const q = state.inputValue?.trim();
+
+      if (state.type === useCombobox.stateChangeTypes.InputChange) {
+        return q ? search(q) : reset();
+      }
+    },
   });
 
   useEffect(() => {
     props.autoFocus && ref.current?.focus();
   }, [props.autoFocus]);
 
-  const isOpen = Boolean(_props.isOpen || isFocus);
+  const isOpen = Boolean(_props.isOpen || isFocus) && options?.length;
   const transition = useTransition();
   const canSubmit =
     transition.state === "idle" && Boolean(_props.inputValue.trim());
@@ -126,10 +174,10 @@ const Search = (props: Props) => {
         <hr className="mb-4 border-secondary" />
 
         <ul>
-          {items.map((item, index) => (
+          {options?.map((item, index) => (
             <li
               {..._props.getItemProps({
-                key: item.value,
+                key: item.name,
                 index,
                 item,
               })}
@@ -141,7 +189,7 @@ const Search = (props: Props) => {
               <div className="flex items-center gap-4 bg-form px-3 py-1">
                 <Icon.Search className="w-6" />
 
-                <span className="mb-1">{item.value}</span>
+                <span className="mb-1">{item.name}</span>
               </div>
             </li>
           ))}
