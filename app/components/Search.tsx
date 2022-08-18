@@ -32,7 +32,9 @@ const items = [
   { value: "grape" },
   { value: "banana" },
 ];
-type Props = CommonProps;
+type Props = CommonProps & {
+  autoFocus?: boolean;
+};
 const Search = (props: Props) => {
   const id = useId();
   const [searchParams] = useSearchParams();
@@ -43,8 +45,14 @@ const Search = (props: Props) => {
     initialInputValue: searchParams.get("q") || "",
   });
 
+  useEffect(() => {
+    props.autoFocus && ref.current?.focus();
+  }, [props.autoFocus]);
+
   const isOpen = Boolean(_props.isOpen || isFocus);
   const transition = useTransition();
+  const canSubmit =
+    transition.state === "idle" && Boolean(_props.inputValue.trim());
 
   return (
     <Form
@@ -55,7 +63,10 @@ const Search = (props: Props) => {
         "brightness-95 hocus-within:brightness-100",
         props.className
       )}
-      onSubmit={() => ref.current?.blur()}
+      onSubmit={(e) => {
+        if (!canSubmit) return e.preventDefault();
+        ref.current?.blur();
+      }}
     >
       <div
         className={clsx(
@@ -84,19 +95,18 @@ const Search = (props: Props) => {
           className="my-1.5 flex-1 bg-transparent"
         />
 
-        {transition.state === "idle" && (
+        {canSubmit && (
           <button
             type="submit"
             className={clsx(
               "border-l border-secondary",
               "w-max whitespace-nowrap p-1 px-4",
               "flex items-center",
-              "font-semibold text-primary-2",
-              _props.inputValue ? "block" : "hidden"
+              "font-semibold text-primary-2"
             )}
           >
             <span className="hidden lg:block">
-              PRESS <kbd>↵</kbd> TO SEARCH
+              SUBMIT OR PRESS <kbd>↵</kbd>
             </span>
             <span className="lg:hidden">SEARCH</span>
           </button>

@@ -182,7 +182,7 @@ export const Result = (props: Props) => {
             <time>15 mins read</time>
           </div>
 
-          {/* Hash Tags */}
+          {/* Featured snippet */}
           <ul className="flex flex-wrap gap-2">
             {hashtags.map((hashtag) => (
               <li key={hashtag} className="mt-2">
