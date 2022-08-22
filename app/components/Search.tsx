@@ -6,49 +6,53 @@ import {
 } from "@remix-run/react";
 import clsx from "clsx";
 import { useCombobox } from "downshift";
-import { useEffect, useId, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useLocalStorage } from "react-use";
 import type { CommonProps } from "~/types";
 import Icon from "./Icon";
 
-function useIsFocus<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [isFocus, setFocus] = useState(false);
+interface Record {
+  name: string;
+  type: string;
+}
+interface History extends Record {
+  created_at: number;
+}
 
-  useEffect(() => {
-    const focus = () => setFocus(true);
-    const blur = () => setFocus(false);
+function useHistory() {
+  const [_options, setHistory] = useLocalStorage<History[]>(
+    "search-history",
+    [{ name: "hello", type: "history", created_at: Date.now() }],
+    {
+      raw: false,
+      serializer: JSON.stringify,
+      deserializer: JSON.parse,
+    }
+  );
+  const options = _options?.slice(0, 5) || [];
 
-    ref.current?.addEventListener("focus", focus);
-    ref.current?.addEventListener("blur", blur);
+  options.sort((a, b) => b.created_at - a.created_at);
 
-    return () => {
-      ref.current?.removeEventListener("focus", focus);
-      ref.current?.removeEventListener("blur", blur);
-    };
-  }, [setFocus]);
+  function append(query: string) {
+    setHistory([
+      { type: "history", name: query, created_at: Date.now() },
+      ...options,
+    ]);
+  }
 
-  return [ref, isFocus] as const;
+  return { options, append };
 }
 
 interface AutoCompleteResult {
   query: string;
-  result: { name: string; type: string }[];
+  result: Record[];
 }
-
 function useAutoComplete() {
   const fetcher = useFetcher<AutoCompleteResult>();
-
-  const [resetNextTick, setResetNextTick] = useState(false);
-
-  const [options, setOptions] = useState<AutoCompleteResult["result"]>([]);
+  const [options, setOptions] = useState<Record[]>([]);
 
   useEffect(() => {
     if (!fetcher.data) return;
-
-    if (resetNextTick) {
-      setResetNextTick(false);
-      return setOptions([]);
-    }
 
     setOptions(fetcher.data.result);
   }, [fetcher.data, setOptions]);
@@ -62,45 +66,65 @@ function useAutoComplete() {
     fetcher.load(`/api/auto-complete?${params}`);
   }
 
-  function reset() {
-    setResetNextTick(true);
-  }
+  return { options, search };
+}
 
-  return { options, search, reset };
+function useSearchBar() {
+  const ref = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState(useSearchParams()[0].get("q") || "");
+
+  const history = useHistory();
+  const autoComplete = useAutoComplete();
+  const items = query ? autoComplete.options : history.options;
+
+  const props = useCombobox({
+    id: useId(),
+    items,
+    initialInputValue: query,
+    itemToString: (item) => item?.name || "",
+    onInputValueChange: ({ inputValue }) => setQuery(inputValue?.trim() || ""),
+    onStateChange: (state) => {
+      if (state.type === useCombobox.stateChangeTypes.InputChange) {
+        const query = state.inputValue?.trim();
+
+        return query && autoComplete.search(query);
+      }
+    },
+  });
+
+  const transition = useTransition();
+
+  const canSubmit = transition.state === "idle" && query;
+  const onSubmit = (e: FormEvent) => {
+    if (!canSubmit) return e.preventDefault();
+
+    history.append(query);
+
+    ref.current?.blur();
+  };
+
+  return {
+    ...props,
+    ref,
+    canSubmit,
+    onSubmit,
+    query,
+    transition,
+    options: items,
+  };
 }
 
 type Props = CommonProps & {
   autoFocus?: boolean;
 };
 const Search = (props: Props) => {
-  const id = useId();
-  const [searchParams] = useSearchParams();
-  const [ref, isFocus] = useIsFocus<HTMLInputElement>();
-
-  const { options, search, reset } = useAutoComplete();
-
-  const _props = useCombobox({
-    id,
-    items: options || [],
-    initialInputValue: searchParams.get("q") || "",
-    itemToString: (item) => item?.name || "",
-    onStateChange: (state) => {
-      const q = state.inputValue?.trim();
-
-      if (state.type === useCombobox.stateChangeTypes.InputChange) {
-        return q ? search(q) : reset();
-      }
-    },
-  });
+  const form = useSearchBar();
 
   useEffect(() => {
-    props.autoFocus && ref.current?.focus();
+    if (props.autoFocus) {
+      form.ref.current?.focus();
+    }
   }, [props.autoFocus]);
-
-  const isOpen = Boolean(_props.isOpen || isFocus) && options?.length;
-  const transition = useTransition();
-  const canSubmit =
-    transition.state === "idle" && Boolean(_props.inputValue.trim());
 
   return (
     <Form
@@ -111,24 +135,23 @@ const Search = (props: Props) => {
         "brightness-95 hocus-within:brightness-100",
         props.className
       )}
-      onSubmit={(e) => {
-        if (!canSubmit) return e.preventDefault();
-        ref.current?.blur();
-      }}
+      onSubmit={form.onSubmit}
+      onFocus={form.openMenu}
+      onBlur={() => setTimeout(form.closeMenu, 100)}
     >
       <div
+        {...form.getComboboxProps()}
         className={clsx(
           "flex items-center p-3",
           "bg-form",
           "shadow",
-          isOpen ? "rounded-t-3xl" : "rounded-3xl",
-          isOpen && "shadow-lg shadow-black",
+          form.isOpen ? "rounded-t-3xl" : "rounded-3xl",
+          form.isOpen && "shadow-lg shadow-black",
           "hocus:shadow-lg hocus:shadow-black",
           "transition-shadow duration-150 ease-out-sine"
         )}
-        {..._props.getComboboxProps()}
       >
-        <label {..._props.getLabelProps()} className="sr-only">
+        <label {...form.getLabelProps()} className="sr-only">
           Search
         </label>
 
@@ -137,13 +160,13 @@ const Search = (props: Props) => {
         </div>
 
         <input
-          {..._props.getInputProps({ ref })}
+          {...form.getInputProps({ ref: form.ref })}
           name="q"
           type="search"
           className="my-1.5 flex-1 bg-transparent"
         />
 
-        {canSubmit && (
+        {form.canSubmit && (
           <button
             type="submit"
             className={clsx(
@@ -160,28 +183,31 @@ const Search = (props: Props) => {
           </button>
         )}
 
-        {transition.state === "submitting" && <Icon.Loading className="w-8" />}
+        {form.transition.state === "submitting" && (
+          <Icon.Loading className="w-8" />
+        )}
       </div>
 
       <div
-        {..._props.getMenuProps()}
+        {...form.getMenuProps()}
         className={clsx(
-          "absolute w-full rounded-b-3xl bg-form pb-6",
-          !isOpen && "hidden",
+          "absolute w-full rounded-b-3xl bg-form pb-4",
+          !form.isOpen && "hidden",
           "shadow-lg shadow-black"
         )}
       >
         <hr className="mb-4 border-secondary" />
 
         <ul>
-          {options?.map((item, index) => (
+          {form.options?.map((item, index) => (
             <li
-              {..._props.getItemProps({
+              {...form.getItemProps({
                 key: item.name,
                 index,
                 item,
               })}
               className={clsx(
+                "cursor-pointer",
                 "hocus:contrast-125",
                 "aria-selected:contrast-125"
               )}
