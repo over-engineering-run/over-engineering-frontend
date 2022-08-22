@@ -22,7 +22,7 @@ interface History extends Record {
 function useHistory() {
   const [_options, setHistory] = useLocalStorage<History[]>(
     "search-history",
-    [{ name: "hello", type: "history", created_at: Date.now() }],
+    [],
     {
       raw: false,
       serializer: JSON.stringify,
@@ -213,7 +213,11 @@ const Search = (props: Props) => {
               )}
             >
               <div className="flex items-center gap-4 bg-form px-3 py-1">
-                <Icon.Search className="w-6" />
+                {item.type === "history" ? (
+                  <Icon.History className="w-6" />
+                ) : (
+                  <Icon.Search className="w-6" />
+                )}
 
                 <span className="mb-1">{item.name}</span>
               </div>

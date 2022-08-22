@@ -3,7 +3,7 @@ import {
   HiOutlineSearch as Search,
   HiOutlineBookOpen as Book,
 } from "react-icons/hi";
-import { MdClose as Close } from "react-icons/md";
+import { MdClose as Close, MdOutlineHistory as History } from "react-icons/md";
 
 import {
   HiOutlineChevronUp,
@@ -29,6 +29,7 @@ const Loading = (props: CommonProps) => (
 export default {
   Menu,
   Search,
+  History,
   Close,
   Chevron,
   Book,
