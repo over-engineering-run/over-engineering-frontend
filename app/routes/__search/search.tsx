@@ -180,6 +180,9 @@ function Reducer(state: State, action: Action) {
   if (action.type === "next_page") {
     return { page: state.page + 1, results: action.payload };
   }
+  if (action.type === "reset") {
+    return { ...state, results: action.payload };
+  }
   return state;
 }
 
@@ -188,6 +191,10 @@ function SearchResults(data: Data) {
     page: 0,
     results: data.result,
   });
+
+  useEffect(() => {
+    dispatch({ type: "reset", payload: data.result });
+  }, [data]);
 
   const fetcher = useFetcher<Data>();
   useEffect(() => {
