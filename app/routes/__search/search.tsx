@@ -128,10 +128,10 @@ export const Result = (props: ResultProps) => {
         </h2>
 
         {/* Snippet */}
-        <p className="text-primary-2 line-clamp-3">
+        <div className="text-primary-2 line-clamp-3">
           <time>{props.lastmod} — </time>
-          {props.snippet}
-        </p>
+          <span dangerouslySetInnerHTML={{ __html: props.snippet }} />
+        </div>
 
         <footer className="flex flex-col gap-2 pt-2">
           {/* Read Time */}
