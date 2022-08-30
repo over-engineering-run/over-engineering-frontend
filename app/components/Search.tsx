@@ -6,8 +6,10 @@ import {
 } from "@remix-run/react";
 import clsx from "clsx";
 import { useCombobox } from "downshift";
+import { descend, eqProps, pipe, prepend, prop, sortBy, uniqWith } from "ramda";
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { useLocalStorage } from "react-use";
+import { ClientOnly } from "remix-utils";
 import type { CommonProps } from "~/types";
 import Icon from "./Icon";
 
@@ -33,12 +35,16 @@ function useHistory() {
 
   options.sort((a, b) => b.created_at - a.created_at);
 
-  function append(query: string) {
-    setHistory([
-      { type: "history", name: query, created_at: Date.now() },
-      ...options,
-    ]);
-  }
+  const append = (query: string) =>
+    setHistory(
+      //@ts-ignore
+      pipe(
+        prepend({ type: "history", name: query, created_at: Date.now() }),
+        uniqWith(eqProps("name")),
+        //@ts-ignore
+        sortBy(descend(prop("created_at")))
+      )(options)
+    );
 
   return { options, append };
 }
@@ -69,6 +75,8 @@ function useAutoComplete() {
   return { options, search };
 }
 
+const { InputChange, FunctionOpenMenu } = useCombobox.stateChangeTypes;
+
 function useSearchBar() {
   const ref = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(useSearchParams()[0].get("q") || "");
@@ -84,7 +92,7 @@ function useSearchBar() {
     itemToString: (item) => item?.name || "",
     onInputValueChange: ({ inputValue }) => setQuery(inputValue?.trim() || ""),
     onStateChange: (state) => {
-      if (state.type === useCombobox.stateChangeTypes.InputChange) {
+      if (state.type === InputChange) {
         const query = state.inputValue?.trim();
 
         return query && autoComplete.search(query);
@@ -111,6 +119,7 @@ function useSearchBar() {
     query,
     transition,
     options: items,
+    isOpen: props.isOpen && items.length,
   };
 }
 
@@ -198,32 +207,36 @@ const Search = (props: Props) => {
       >
         <hr className="mb-4 border-secondary" />
 
-        <ul>
-          {form.options?.map((item, index) => (
-            <li
-              {...form.getItemProps({
-                key: item.name,
-                index,
-                item,
-              })}
-              className={clsx(
-                "cursor-pointer",
-                "hocus:contrast-125",
-                "aria-selected:contrast-125"
-              )}
-            >
-              <div className="flex items-center gap-4 bg-form px-3 py-1">
-                {item.type === "history" ? (
-                  <Icon.History className="w-6" />
-                ) : (
-                  <Icon.Search className="w-6" />
-                )}
+        <ClientOnly>
+          {() => (
+            <ul>
+              {form.options?.map((item, index) => (
+                <li
+                  {...form.getItemProps({
+                    key: item.name,
+                    index,
+                    item,
+                  })}
+                  className={clsx(
+                    "cursor-pointer",
+                    "hocus:contrast-125",
+                    "aria-selected:contrast-125"
+                  )}
+                >
+                  <div className="flex items-center gap-4 bg-form px-3 py-1">
+                    {item.type === "history" ? (
+                      <Icon.History className="w-6" />
+                    ) : (
+                      <Icon.Search className="w-6" />
+                    )}
 
-                <span className="mb-1">{item.name}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+                    <span className="mb-1">{item.name}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </ClientOnly>
       </div>
     </Form>
   );
