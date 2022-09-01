@@ -4,16 +4,16 @@
 
 ### Input
 
-- [ ] Search field including auto-suggest and instant results (on character input)
+- [x] Search field including auto-suggest and instant results (on character input)
     - [x] Search Field
     - [x] Search Submit and transition to search result page
-    - [ ] Auto Suggestion API
+    - [x] Auto Suggestion API
 - [x] Don't erase users query after submit
-- [ ] Keep recent user's search queries (present less than 10 queries, mobile 3-5)
+- [x] Keep recent user's search queries (present less than 10 queries, mobile 3-5)
 
 ### Result
 
-- [ ] Provide accurate and relevant results
+- [x] Provide accurate and relevant results
 - [ ] Correct typos
 - [x] Choose proper page layout (details in list, pictures in grids)
     - [x] Search Result in List
@@ -22,7 +22,7 @@
 
 ### Auto Suggestion
 
-- [ ] Effective auto suggestion
+- [x] Effective auto suggestion
 
 ### Control
 

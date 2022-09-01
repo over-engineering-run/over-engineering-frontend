@@ -20,6 +20,7 @@ module.exports = {
       backgroundColor: {
         primary: color("background-primary"),
         form: color("background-form"),
+        mark: color("background-mark"),
       },
       borderColor: {
         primary: color("border-primary"),

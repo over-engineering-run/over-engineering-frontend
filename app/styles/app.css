@@ -53,6 +53,10 @@
   a {
     @apply hocus:underline;
   }
+
+  mark {
+    @apply bg-mark;
+  }
 }
 
 @layer components {
@@ -111,6 +115,7 @@
 
     --color-background-primary: theme("colors.slate.900");
     --color-background-form: theme("colors.slate.800");
+    --color-background-mark: theme("colors.purple.200");
 
     --color-border-primary: theme("colors.slate.800");
     --color-border-secondary: theme("colors.slate.500");
