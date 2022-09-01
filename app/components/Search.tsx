@@ -211,19 +211,20 @@ const Search = (props: Props) => {
           {() => (
             <ul>
               {form.options?.map((item, index) => (
-                <li
-                  {...form.getItemProps({
-                    key: item.name,
-                    index,
-                    item,
-                  })}
-                  className={clsx(
-                    "cursor-pointer",
-                    "hocus:contrast-125",
-                    "aria-selected:contrast-125"
-                  )}
-                >
-                  <div className="flex items-center gap-4 bg-form px-3 py-1">
+                <li>
+                  <div
+                    className={clsx(
+                      "cursor-pointer",
+                      "hocus:contrast-125",
+                      "aria-selected:contrast-125",
+                      "flex items-center gap-4 bg-form px-3 py-1"
+                    )}
+                    {...form.getItemProps({
+                      key: item.name,
+                      index,
+                      item,
+                    })}
+                  >
                     {item.type === "history" ? (
                       <Icon.History className="w-6" />
                     ) : (
