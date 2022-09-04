@@ -211,7 +211,7 @@ const Search = (props: Props) => {
           {() => (
             <ul>
               {form.options?.map((item, index) => (
-                <li>
+                <li key={item.name}>
                   <div
                     className={clsx(
                       "cursor-pointer",
