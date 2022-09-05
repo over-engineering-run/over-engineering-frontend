@@ -66,5 +66,6 @@ const Item = forwardRef(({ as: Comp = "a", current, ...props }, ref) => {
   );
 }) as ForwardRefComponent<"a", ItemProps>;
 
+Item.displayName = "Item";
 Pagination.Item = Item;
 export default Pagination;

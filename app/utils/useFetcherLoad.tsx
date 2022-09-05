@@ -6,7 +6,7 @@ function useFetcherLoad(href: string) {
 
   <fetcher.Form />;
 
-  useEffect(() => void fetcher.load(href), [href]);
+  useEffect(() => void fetcher.load(href), [href, fetcher]);
 
   return fetcher.data;
 }

@@ -47,7 +47,7 @@ const Layout = () => (
     <img
       className="fixed inset-0 opacity-60"
       src="https://resources.github.com/assets/images/dark-pixel-grid.svg"
-      alt="background image"
+      alt="background"
       role="presentation"
     />
 
