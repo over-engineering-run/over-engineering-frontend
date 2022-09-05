@@ -12,9 +12,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
 } from "recharts";
-import { useState } from "react";
 
 const colors = circular([
   "#00429d",
@@ -143,7 +141,7 @@ const Trends = () => (
     <img
       className="fixed bottom-0 right-0 w-[90%] opacity-20"
       src="https://survey.stackoverflow.co/2022/hero.bfb84f73.svg"
-      alt="background image"
+      alt="background"
       role="presentation"
     />
 

@@ -1,5 +1,6 @@
-import { useEffect, useReducer, useState } from "react";
-import { json, LoaderFunction } from "@remix-run/server-runtime";
+import { useEffect, useState } from "react";
+import { json } from "@remix-run/server-runtime";
+import type { LoaderFunction } from "@remix-run/server-runtime";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { redirectBack } from "remix-utils";
 import clsx from "clsx";
