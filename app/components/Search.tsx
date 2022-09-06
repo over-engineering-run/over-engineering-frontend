@@ -7,7 +7,8 @@ import {
 import clsx from "clsx";
 import { useCombobox } from "downshift";
 import { descend, eqProps, pipe, prepend, prop, sortBy, uniqWith } from "ramda";
-import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { useLocalStorage } from "react-use";
 import { ClientOnly } from "remix-utils";
 import type { CommonProps } from "~/types";
@@ -75,7 +76,7 @@ function useAutoComplete() {
   return { options, search };
 }
 
-const { InputChange, FunctionOpenMenu } = useCombobox.stateChangeTypes;
+const { InputChange } = useCombobox.stateChangeTypes;
 
 function useSearchBar() {
   const ref = useRef<HTMLInputElement>(null);
@@ -133,7 +134,7 @@ const Search = (props: Props) => {
     if (props.autoFocus) {
       form.ref.current?.focus();
     }
-  }, [props.autoFocus]);
+  }, [props.autoFocus, form.ref]);
 
   return (
     <Form
@@ -211,7 +212,7 @@ const Search = (props: Props) => {
           {() => (
             <ul>
               {form.options?.map((item, index) => (
-                <li>
+                <li key={item.name}>
                   <div
                     className={clsx(
                       "cursor-pointer",

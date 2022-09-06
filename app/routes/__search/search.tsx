@@ -1,5 +1,6 @@
-import { useEffect, useReducer } from "react";
-import { json, LoaderFunction } from "@remix-run/server-runtime";
+import { useEffect, useState } from "react";
+import { json } from "@remix-run/server-runtime";
+import type { LoaderFunction } from "@remix-run/server-runtime";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { redirectBack } from "remix-utils";
 import clsx from "clsx";
@@ -42,7 +43,7 @@ type SearchProps = {
 };
 const search = (props: SearchProps) =>
   ky
-    .get("http://over-engineering-backend-staging.fly.dev/v1/search", {
+    .get("https://over-engineering-backend.fly.dev/docs/v1/search", {
       searchParams: props,
     })
     .json();
@@ -172,36 +173,22 @@ type State = {
   page: number;
   results: SearchResult[];
 };
-type Action =
-  | { type: "next_page"; payload: SearchResult[] }
-  | { type: "reset"; payload: SearchResult[] };
-
-function Reducer(state: State, action: Action) {
-  if (action.type === "next_page") {
-    return { page: state.page + 1, results: action.payload };
-  }
-  if (action.type === "reset") {
-    return { ...state, results: action.payload };
-  }
-  return state;
-}
-
 function SearchResults(data: Data) {
-  const [{ page, results }, dispatch] = useReducer(Reducer, {
+  const [{ page, results }, setNextPage] = useState<State>({
     page: 0,
     results: data.result,
   });
 
-  useEffect(() => {
-    dispatch({ type: "reset", payload: data.result });
-  }, [data]);
-
   const fetcher = useFetcher<Data>();
   useEffect(() => {
-    if (!fetcher.data) return;
+    if (!fetcher.data?.result) return;
 
-    dispatch({ type: "next_page", payload: fetcher.data.result });
-  }, [fetcher.data, dispatch]);
+    const results = fetcher.data.result;
+    setNextPage((state) => ({
+      page: state.page + 1,
+      results: [...state.results, ...results],
+    }));
+  }, [fetcher.data?.result, setNextPage]);
 
   function loadNextPage() {
     const params = new URLSearchParams({
@@ -322,7 +309,7 @@ const Page = () => {
       <p className="my-4 px-4 lg:ml-44 lg:px-0">About {data.total} results</p>
 
       {/* List of Search Results */}
-      <div className="flex-1">
+      <div className="flex-1" key={data.query}>
         <SearchResults {...data} />
       </div>
     </div>

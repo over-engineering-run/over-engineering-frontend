@@ -12,15 +12,15 @@ import {
   HiOutlineChevronDown,
 } from "react-icons/hi";
 
+import Lottie from "lottie-react";
+import type { CommonProps } from "~/types";
+
 const Chevron = {
   Up: HiOutlineChevronUp,
   Down: HiOutlineChevronDown,
   Left: HiOutlineChevronLeft,
   Right: HiOutlineChevronRight,
 };
-
-import Lottie from "lottie-react";
-import { CommonProps } from "~/types";
 
 const Loading = (props: CommonProps) => (
   <Lottie animationData={require("~/assets/loading.json")} {...props} />
