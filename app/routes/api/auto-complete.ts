@@ -14,7 +14,7 @@ export const loader: LoaderFunction = ({ request }) => {
 
   return ky
     .get(
-      "http://over-engineering-backend-staging.fly.dev/v1/search/auto-complete",
+      "https://over-engineering-backend.fly.dev/docs/v1/search/auto-complete",
       {
         searchParams: results.data,
       }
