@@ -1,9 +1,8 @@
 import type { LoaderFunction } from "@remix-run/server-runtime";
+import ky from "ky";
 import {
   pipe,
   assoc,
-  evolve,
-  trim,
   map,
   flatten,
   range,
@@ -15,19 +14,21 @@ import {
   take,
   reduce,
 } from "ramda";
-import db from "~/db.server";
 
-const count_by_genre_in_year = async (year: string) => {
-  const { data, error } = await db.rpc("count_by_genre", { year: `${year}%` });
+interface GenreCount {
+  genre: string;
+  count: number;
+}
 
-  if (error) throw error;
-
-  return data.map(
-    evolve({
-      genre: trim,
-    })
-  );
-};
+const count_by_genre_in_year = async (year: string) =>
+  ky
+    .get(
+      "https://over-engineering-backend.fly.dev/statistics/v1/count_by_genre",
+      {
+        searchParams: { year },
+      }
+    )
+    .json<GenreCount[]>();
 
 //@ts-ignore
 const byCount = descend(prop("count"));

@@ -43,7 +43,7 @@ type SearchProps = {
 };
 const search = (props: SearchProps) =>
   ky
-    .get("http://over-engineering-backend-staging.fly.dev/v1/search", {
+    .get("https://over-engineering-backend.fly.dev/docs/v1/search", {
       searchParams: props,
     })
     .json();
@@ -309,8 +309,8 @@ const Page = () => {
       <p className="my-4 px-4 lg:ml-44 lg:px-0">About {data.total} results</p>
 
       {/* List of Search Results */}
-      <div className="flex-1">
-        <SearchResults {...data} key={data.query} />
+      <div className="flex-1" key={data.query}>
+        <SearchResults {...data} />
       </div>
     </div>
   );
