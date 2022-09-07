@@ -23,7 +23,8 @@ import {
   Tooltip,
 } from "recharts";
 import api from "~/utils/api";
-import { json, LoaderFunction } from "@remix-run/server-runtime";
+import { json } from "@remix-run/server-runtime";
+import type { LoaderFunction } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
 import { promiseHash } from "remix-utils";
 
