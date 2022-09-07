@@ -11,9 +11,9 @@ import * as datefns from "date-fns";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import InfiniteLoader from "react-window-infinite-loader";
-import ky from "ky";
 import { noop } from "@reach/utils";
 import { assert } from "@sindresorhus/is";
+import api from "~/utils/api";
 
 interface SearchResult {
   position: number;
@@ -41,12 +41,8 @@ type SearchProps = {
   page: number;
   limit: number;
 };
-const search = (props: SearchProps) =>
-  ky
-    .get("https://over-engineering-backend.fly.dev/docs/v1/search", {
-      searchParams: props,
-    })
-    .json();
+const search = (searchParams: SearchProps) =>
+  api.get("docs/v1/search", { searchParams }).json();
 
 const COUNT_PER_PAGE = 20;
 
