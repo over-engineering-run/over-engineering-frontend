@@ -227,12 +227,12 @@ const Search = (props: Props) => {
                     })}
                   >
                     {item.type === "history" ? (
-                      <Icon.History className="w-6" />
+                      <Icon.History className="w-6 pointer-events-none" />
                     ) : (
-                      <Icon.Search className="w-6" />
+                      <Icon.Search className="w-6 pointer-events-none" />
                     )}
 
-                    <span className="mb-1">{item.name}</span>
+                    <span className="mb-1 pointer-events-none">{item.name}</span>
                   </div>
                 </li>
               ))}
